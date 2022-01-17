@@ -84,31 +84,6 @@ def singleByteXORcipher(string):
         if lang['language'] == 'en':
             print(sentence)
 
-def scoreTest(text):
-    "This isn't a very good metric to go by."
-
-    letters = dict()
-
-    for letter in text:
-        if letter in letters:
-            letters[letter] += 1
-        else:
-            letters[letter] = 1
-    
-    maxvals = sorted(letters.keys(), key=lambda k: letters[k], reverse=True)
-    if maxvals[1] == 'e' or maxvals[1] == 'E':
-        return True
-    if maxvals[1] == 'a' or maxvals[1] == 'A':
-        return True
-    if maxvals[1] == 'r' or maxvals[1] == 'R':
-        return True
-    if maxvals[1] == 'i' or maxvals[1] == 'I':
-        return True
-    if maxvals[1] == 'o' or maxvals[1] == 'O':
-        return True
-
-    return False
-
 """
 cipher = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 singleByteXORcipher(cipher) 
@@ -194,3 +169,108 @@ def test_repeatingKeyXOR():
     target = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"
     assert s.hex() == target
 
+def hammingDistance(str1, str2):
+    # we can always default to from scipy.spatial.distance import hamming 
+    # https://stackoverflow.com/questions/26122368/inaccurate-hamming-distance-of-two-strings-in-binary
+    bytes1 = str1.encode("ascii")
+    bytes2 = str2.encode("ascii")
+    return sum(bin(i^j).count("1") for i,j in zip(bytes1, bytes2))
+
+def hammingDistance2(str1, str2):
+    num1 = int(str1.encode("ascii").hex(), 16)
+    num2 = int(str2.encode("ascii").hex(), 16)
+    xor = num1 ^ num2
+    return bin(xor).count("1")
+
+
+def test_hammingDistance():
+    # sanity check for our hamming distance function
+    message1 = "this is a test"
+    message2 = "wokka wokka!!!"
+    assert hammingDistance(message1, message2) == 37
+
+def test_hammingDistance2():
+    # sanity check for our hamming distance function
+    message1 = "this is a test"
+    message2 = "wokka wokka!!!"
+    assert hammingDistance2(message1, message2) == 37
+
+from collections import OrderedDict
+def breakingRepeatingKeyXOR(message_bytes):
+    import itertools
+    keysDict = dict()
+    for KEYSIZE in range(2,41):
+        array1 = message_bytes[:KEYSIZE]
+        array2 = message_bytes[2*KEYSIZE:3*KEYSIZE]
+        array3 = message_bytes[4*KEYSIZE:5*KEYSIZE]
+        array4 = message_bytes[10*KEYSIZE:11*KEYSIZE]
+    
+        array_of_snippets = [array1, array2, array3, array4]
+        to_average = []
+        combinations = list(itertools.combinations(array_of_snippets, 2))
+
+        for combination in combinations:
+            distance = hammingDistance2(
+                    combination[0].decode("ascii"), 
+                    combination[1].decode("ascii"))
+
+            to_average.append(distance / KEYSIZE)
+
+        keysDict[KEYSIZE] = sum(to_average)/len(to_average)
+    
+    print(min(keysDict, key=keysDict.get))
+    return min(keysDict, key=keysDict.get)
+    #print({k: v for k, v in sorted(keysDict.items(), key=lambda item: item[1])})
+    # 5, 3, 2, 13, 11, try 5
+
+import base64
+from scorer import singleByteXORcipher
+def set1challenge6():
+    data = open("resources/cryptopals-set-1-6.txt", "r").read()[:-1]
+    message_decoded = base64.b64decode(data)
+   
+    transposed = transpose(message_decoded, breakingRepeatingKeyXOR(message_decoded))
+   
+    ans = dict()
+    for key in transposed.keys():
+        transposed_message = bytes(transposed[key])
+        deciphered = singleByteXORcipher(transposed_message.decode("ascii"))
+        print(deciphered)
+        ans[key] = deciphered[chr(deciphered[0])]
+
+    print(ans)  
+
+def transpose(message, n):
+    # takes bytes, it actually doesn't matter if the last chunk is not used, we have enough
+    chunky = list(chunks(message, n)) 
+    transposed = dict()    
+
+    last = []
+
+    # incase message % len(n) != 0
+    if len(chunky[-1]) != n:
+        last = chunky.pop()
+        
+    for chunk in chunky:
+        for i in range(len(chunk)):
+            if chunk[i] != 0:
+                if i in transposed:
+                    transposed[i].append(chunk[i])
+                else:
+                    transposed[i] = [chunk[i]]
+
+    for i in range(len(last)):
+        if last[i] != 0:
+            if i in transposed:
+                transposed[i].append(chunk[i])
+            else:
+                transposed[i] = [last[i]]
+
+    return transposed
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+set1challenge6()
