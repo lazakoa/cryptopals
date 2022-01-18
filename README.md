@@ -13,6 +13,7 @@ alias pytest="pytest -v"
 ```
 python -m spacy download en_core_web_sm
 ```  
+3. pycryptodome
 
 # About
 I decided not to use a jupyter notebook this time. I'm not happy with spacy, given how long it too to set up the results weren't any better than langdetect. I also needed to download a full model for spacy.
