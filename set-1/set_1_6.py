@@ -1,5 +1,5 @@
 #!/bin/env python
-
+from set_1_5 import repeatingKeyXOR
 
 def hammingDistance(str1, str2):
     # we can always default to from scipy.spatial.distance import hamming 
@@ -83,13 +83,5 @@ def transpose(message: bytes, n: int):
 
     return chunks
 
-def repeatingKeyXOR(message, key):
-
-    repeatedKey = (key * len(message))[:len(message)] 
-
-    enciphered = bytes([a ^ b for a, b in zip(message.encode('ascii'), 
-        repeatedKey.encode('ascii'))])
-    return enciphered
-
-
-print(set1challenge6())
+if __name__ == "__main__":
+    print(set1challenge6())

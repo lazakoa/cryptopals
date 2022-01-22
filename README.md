@@ -2,18 +2,13 @@
 Solutions to the matasano crypto challenges using python.
 
 # Dependencies
-1. pytest
- 
-```
-alias pytest="pytest -v"
-```
-
 1. bpython
-2. spacy & spacy_langdetect
-```
-python -m spacy download en_core_web_sm
-```  
-3. pycryptodome
+2. pycryptodome
+https://pycryptodome.readthedocs.io/en/latest/index.html
 
 # About
-I decided not to use a jupyter notebook this time. I'm not happy with spacy, given how long it too to set up the results weren't any better than langdetect. I also needed to download a full model for spacy.
+I decided not to use a jupyter notebook this time. 
+
+* Each solution gets a file.
+* Don't bother with pytest.
+* Don't use a neural network to detect plaintext go with letter frequency scoring function.

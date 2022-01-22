@@ -1,9 +1,9 @@
 #!/bin/env python
 
-frequencies = {
-    "a": 0.07743208627550165,
-    "b": 0.01402241586697527,
-    "c": 0.02665670667329359,
+frequencies = { 
+    "a": 0.07743208627550165, 
+    "b": 0.01402241586697527, 
+    "c": 0.02665670667329359, 
     "d": 0.04920785702311875,
     "e": 0.13464518994079883,
     "f": 0.025036247121552113,
@@ -29,15 +29,15 @@ frequencies = {
     "z": 0.0006293617859758195,
 }
 
-def single_byte_xor(text: bytes, key: int) -> bytes:
+def single_byte_xor(text_bytes: bytes, key: int) -> bytes:
     """Given a plain text `text` as bytes and an encryption key `key` as a byte
     in range [0, 256) the function encrypts the text by performing
     XOR of all the bytes and the `key` and returns the resultant.
     """
-    return bytes([b ^ key for b in text])
+    return bytes([b ^ key for b in text_bytes])
 
 
-def score_text(text: bytes) -> float:
+def score_text(text: str) -> float:
     # lower scores are better
     score = 0.0
     l = len(text)
@@ -52,9 +52,9 @@ def score_text(text: bytes) -> float:
 def singleByteXORpossibleDecoded(string: bytes):
     solutions = []
     for i in range(128):
-        possible = (i, single_byte_xor(string, i).decode("ascii"))
+        possible = (i, single_byte_xor(string, i))
         solutions.append(possible) 
-    
+   
     return solutions
 
 def singleByteXORcipher(string):
@@ -62,33 +62,11 @@ def singleByteXORcipher(string):
     Cooking MC's like a pound of bacon
     """
 
-    solutions = singleByteXORpossibleDecoded(string)
-    solutions = [(x[0], x[1] , score_text(x[1].encode("ascii"))) for x in solutions]
+    solutions = singleByteXORpossibleDecoded(bytes.fromhex(string))
+    solutions = [(x[0], x[1] , score_text(x[1])) for x in solutions]
     result = min(solutions, key = lambda x: x[2])
     return result
 
-"""
-message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
-print(singleByteXORcipher(message))
-"""
-def detectSingleCharacterXOR():
-    """
-    170: Now that the party is jumping
-    """
-    f = open("resources/cryptopals-set-1-4.txt", "r")
-    lines = []
-    for line in f:
-        lines.append(line.strip())
-    f.close()
-    
-    results = []
-    for i in range(len(lines)):
-
-
-        try:
-            result = singleByteXORcipher(lines[i])
-            results.append(result)
-        except UnicodeDecodeError:
-            pass
-
-    return min(results, key = lambda x: x[2])[1]
+if __name__ == "__main__":
+    message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+    print("singleByteXORcipher: ", singleByteXORcipher(message)[2].decode("ascii"))
