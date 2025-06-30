@@ -5,7 +5,6 @@ Detect the ECB being used.
 """
 
 def chunkify(message):
-    import math
     chunks = []
 
     for i in range(10):
